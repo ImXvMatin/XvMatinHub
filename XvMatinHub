@@ -1,0 +1,131 @@
+-- Script by XvMatin | Universal GUI
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local UIS = game:GetService("UserInputService")
+
+local gui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+gui.Name = "XvMatinHub"
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 300, 0, 250)
+frame.Position = UDim2.new(0.5, -150, 0.5, -125)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "👑 XvMatin Universal Hub"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+
+local toggleButton = Instance.new("TextButton", gui)
+toggleButton.Size = UDim2.new(0, 100, 0, 30)
+toggleButton.Position = UDim2.new(0, 10, 0, 10)
+toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+toggleButton.Text = "Toggle GUI"
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Font = Enum.Font.Gotham
+toggleButton.TextSize = 14
+
+toggleButton.MouseButton1Click:Connect(function()
+    frame.Visible = not frame.Visible
+end)
+
+-- Fly toggle
+local flying = false
+local speed = 50
+
+local function fly()
+    local char = LocalPlayer.Character
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local bv = Instance.new("BodyVelocity", hrp)
+    bv.Name = "FlyVelocity"
+    bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+    bv.Velocity = Vector3.zero
+
+    flying = true
+    while flying do
+        bv.Velocity = (Mouse.Hit.p - hrp.Position).Unit * speed
+        task.wait()
+    end
+    bv:Destroy()
+end
+
+local flyButton = Instance.new("TextButton", frame)
+flyButton.Size = UDim2.new(0.8, 0, 0, 30)
+flyButton.Position = UDim2.new(0.1, 0, 0.2, 0)
+flyButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+flyButton.Text = "Toggle Fly"
+flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+flyButton.Font = Enum.Font.Gotham
+flyButton.TextSize = 14
+
+flyButton.MouseButton1Click:Connect(function()
+    flying = not flying
+    if flying then
+        fly()
+    end
+end)
+
+-- Speed slider (simplified)
+LocalPlayer.CharacterAdded:Connect(function(char)
+    char:WaitForChild("Humanoid").WalkSpeed = speed
+end)
+
+-- ESP players
+for _, plr in pairs(Players:GetPlayers()) do
+    if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("Head") then
+        local esp = Instance.new("BillboardGui", plr.Character.Head)
+        esp.Size = UDim2.new(0, 100, 0, 40)
+        esp.AlwaysOnTop = true
+
+        local label = Instance.new("TextLabel", esp)
+        label.Size = UDim2.new(1, 0, 1, 0)
+        label.BackgroundTransparency = 1
+        label.Text = "👤 " .. plr.Name
+        label.TextColor3 = Color3.fromRGB(255, 0, 0)
+        label.Font = Enum.Font.GothamBold
+        label.TextScaled = true
+    end
+end
+
+-- Sit & Sleep
+local function playAnim(id)
+    local anim = Instance.new("Animation")
+    anim.AnimationId = "rbxassetid://" .. id
+    local track = LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):LoadAnimation(anim)
+    track:Play()
+end
+
+local sitButton = Instance.new("TextButton", frame)
+sitButton.Size = UDim2.new(0.8, 0, 0, 30)
+sitButton.Position = UDim2.new(0.1, 0, 0.4, 0)
+sitButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+sitButton.Text = "Sit"
+sitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+sitButton.Font = Enum.Font.Gotham
+sitButton.TextSize = 14
+sitButton.MouseButton1Click:Connect(function()
+    playAnim("282574440") -- Sit animation
+end)
+
+local sleepButton = Instance.new("TextButton", frame)
+sleepButton.Size = UDim2.new(0.8, 0, 0, 30)
+sleepButton.Position = UDim2.new(0.1, 0, 0.6, 0)
+sleepButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+sleepButton.Text = "Sleep"
+sleepButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+sleepButton.Font = Enum.Font.Gotham
+sleepButton.TextSize = 14
+sleepButton.MouseButton1Click:Connect(function()
+    playAnim("180435571") -- Sleep animation
+end)
