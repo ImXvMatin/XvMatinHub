@@ -1,0 +1,111 @@
+-- GUI Setup
+local ScreenGui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
+ScreenGui.Name = "XvUniversalHub"
+ScreenGui.ResetOnSpawn = false
+
+local OpenButton = Instance.new("TextButton", ScreenGui)
+OpenButton.Size = UDim2.new(0, 100, 0, 40)
+OpenButton.Position = UDim2.new(0, 10, 0, 10)
+OpenButton.Text = "Xv"
+OpenButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenButton.Font = Enum.Font.GothamBold
+OpenButton.TextSize = 20
+
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 200, 0, 200)
+MainFrame.Position = UDim2.new(0, 10, 0, 60)
+MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MainFrame.Visible = false
+
+OpenButton.MouseButton1Click:Connect(function()
+	MainFrame.Visible = not MainFrame.Visible
+end)
+
+-- Buttons
+local function createButton(text, yPos)
+	local btn = Instance.new("TextButton", MainFrame)
+	btn.Size = UDim2.new(0, 180, 0, 40)
+	btn.Position = UDim2.new(0, 10, 0, yPos)
+	btn.Text = text
+	btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.Font = Enum.Font.Gotham
+	btn.TextSize = 18
+	return btn
+end
+
+local FlyButton = createButton("Toggle Fly", 0.05)
+local SitButton = createButton("Toggle Sit", 0.35)
+local SleepButton = createButton("Toggle Sleep", 0.65)
+
+-- Fly Logic
+local flying = false
+local speed = 3
+local UIS = game:GetService("UserInputService")
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local hrp = char:WaitForChild("HumanoidRootPart")
+local direction = Vector3.zero
+local bv = nil
+
+UIS.InputBegan:Connect(function(input)
+	if input.KeyCode == Enum.KeyCode.W then direction = Vector3.new(0, 0, -1)
+	elseif input.KeyCode == Enum.KeyCode.S then direction = Vector3.new(0, 0, 1)
+	elseif input.KeyCode == Enum.KeyCode.A then direction = Vector3.new(-1, 0, 0)
+	elseif input.KeyCode == Enum.KeyCode.D then direction = Vector3.new(1, 0, 0)
+end)
+
+UIS.InputEnded:Connect(function(input)
+	if input.KeyCode == Enum.KeyCode.W or input.KeyCode == Enum.KeyCode.S or input.KeyCode == Enum.KeyCode.A or input.KeyCode == Enum.KeyCode.D then
+		direction = Vector3.zero
+	end
+end)
+
+FlyButton.MouseButton1Click:Connect(function()
+	flying = not flying
+	if flying then
+		bv = Instance.new("BodyVelocity", hrp)
+		bv.Name = "FlyVelocity"
+		bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+		bv.Velocity = Vector3.zero
+
+		game:GetService("RunService").Heartbeat:Connect(function()
+			if flying and bv then
+				bv.Velocity = (hrp.CFrame:VectorToWorldSpace(direction)) * speed
+			end
+		end)
+	else
+		if bv then bv:Destroy() bv = nil end
+	end
+end)
+
+-- Sit Logic
+local sitting = false
+SitButton.MouseButton1Click:Connect(function()
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if hum then
+		sitting = not sitting
+		hum.Sit = sitting
+	end
+end)
+
+-- Sleep Logic
+local sleeping = false
+local sleepAnim = Instance.new("Animation")
+sleepAnim.AnimationId = "rbxassetid://282574440"
+local sleepTrack = nil
+
+SleepButton.MouseButton1Click:Connect(function()
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if hum then
+		if not sleeping then
+			sleepTrack = hum:LoadAnimation(sleepAnim)
+			sleepTrack:Play()
+			sleeping = true
+		else
+			if sleepTrack then sleepTrack:Stop() end
+			sleeping = false
+		end
+	end
+end)
